@@ -20,6 +20,7 @@ This is a remote nagios check written in php to check SSL/TLS protocols and ciph
 
 ##Defaults
 Critical on SSLv2, SSLv3; null, deprecated, export, and "national" encryption; MD5 HMAC; null authentication
+
 Warning on missing PFS
 
 ##Usage
