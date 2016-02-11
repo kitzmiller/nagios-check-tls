@@ -53,7 +53,7 @@ foreach($data as $proto => $val) {
 		if($warnpfs && !$details->forwardsecrecy) { $warning = true; $retvals[] = "No PFS(" . $ciphersuite . ")"; }
 		if($details->export == true) { $critical = true; $retvals[] = "Export(" . $ciphersuite . ")"; }
 		if(in_array($details->cipher, array("RC4", "RC2", "3DES", "DES"))) { $critical = true; $retvals[] = "Bad cipher " . $details->cipher . "($ciphersuite)"; }
-		if(in_array($details->cipher, array("CAMILLIA", "IDEA", "SEED"))) { $critical = true; $retvals[] = "National cipher " . $details->cipher . "($ciphersuite)"; }
+		if(in_array($details->cipher, array("CAMELLIA", "IDEA", "SEED"))) { $critical = true; $retvals[] = "National cipher " . $details->cipher . "($ciphersuite)"; }
 		if($details->cipher == "NULL") { $critical = true; $retvals[] = "Null cipher($ciphersuite)"; }
 		if($details->authentication == "NULL") { $critical = true; $retvals[] = "Null Authentication($ciphersuite)"; }
 		if($details->bitlength < 128) { $critical = true; $retvals[] = "Weak key($ciphersuite)"; }
