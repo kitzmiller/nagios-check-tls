@@ -1,13 +1,18 @@
 #!/usr/bin/php
 <?php
 /*****
+ * Version 0.3 - 2017-03-14 - Chris Kitzmiller
+ *    Correct port handling
+ * Version 0.2 - 2016-02-11 - Chris Kitzmiller
+ *    Check for weak dh bit lengths
  * Version 0.1 - 2016-02-04 - Chris Kitzmiller
  *****/
 
 // Get options
-$shortopts = "H:hv";
+$shortopts = "H:hvp:";
 $longopts = array(
 	"help",
+	"no-warn-dhbits",
 	"no-warn-pfs",
 	"version"
 );
@@ -28,6 +33,7 @@ if(!isset($o["H"])) { usage(); exit(3); }
 
 // Internal variables
 $warnpfs = isset($o["no-warn-pfs"]) ? false : true;
+$warndh = isset($o["no-warn-dhbits"]) ? false : true;
 $warning = false;
 $critical = false;
 $retvals = array();
@@ -45,6 +51,8 @@ foreach($data as $proto => $val) {
 	if($proto == "preferred") {
 		foreach($val as $ciphersuite => $details) {
 			$retval = "OK: " . $ciphersuite;
+			if(isset($details->curvename)) { $retval .= " (" . $details->curvename . ")"; }
+			if(isset($details->dhbitlength)) { $retval .= " (DH " . $details->dhbitlength . " bits)"; }
 		}
 	}
 	if($proto == "ssl2") { $critical = true; $retvals[] = "SSLv2 enabled"; }
@@ -58,6 +66,7 @@ foreach($data as $proto => $val) {
 		if($details->authentication == "NULL") { $critical = true; $retvals[] = "Null Authentication($ciphersuite)"; }
 		if($details->bitlength < 128) { $critical = true; $retvals[] = "Weak key($ciphersuite)"; }
 		if($details->mac == "MD5") { $critical = true; $retvals[] = "Bad MAC " . $details->mac . "($ciphersuite)"; }
+		if($warndh && isset($details->dhbitlength) && ($details->dhbitlength <= 1024)) { $critical = true; $retvals[] = "Weak DH (" . $details->dhbitlength . ")"; }
 	}
 }
 
@@ -73,7 +82,7 @@ echo($retval . "\n"); exit($retcode);
 
 function version() {
 	global $argv, $TLSSCAN;
-	echo($argv[0] . " v0.1 - " . exec($TLSSCAN. " --version") . "\n");
+	echo($argv[0] . " v0.2 - " . exec($TLSSCAN. " --version") . "\n");
 }
 
 function usage() {
@@ -86,6 +95,7 @@ function usage() {
 	echo("OPTIONS:\n");
 	echo("  -H                 Hostname or IP address\n");
 	echo("  -h, --help         This message\n");
+	echo("  --no-warn-dhbits   Skip warning on DH bit lengths\n");
 	echo("  --no-warn-pfs      Skip warning on missing PFS\n");
 	echo("  -p                 Port, defaults to 443\n");
 	echo("  -v, --version      Show version information\n");
